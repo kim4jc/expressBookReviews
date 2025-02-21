@@ -1,3 +1,8 @@
+const express = require('express');
+const app = express();
+const port = 8080;
+
+
 let books = {
       1: {"author": "Chinua Achebe","title": "Things Fall Apart", "reviews": {} },
       2: {"author": "Hans Christian Andersen","title": "Fairy tales", "reviews": {} },
@@ -11,4 +16,10 @@ let books = {
       10: {"author": "Samuel Beckett","title": "Molloy, Malone Dies, The Unnamable, the trilogy", "reviews": {} }
 }
 
-module.exports=books;
+app.get('/books', (req, res)=>{
+    res.send(books);
+});
+
+app.listen(port, ()=>{
+    console.log(`Server is running on http://localhost:${port}`);
+});

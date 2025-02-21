@@ -1,8 +1,8 @@
 const express = require('express');
-let books = require("./booksdb.js");
 let isValid = require("./auth_users.js").isValid;
 let users = require("./auth_users.js").users;
 const public_users = express.Router();
+const axios = require('axios')
 
 
 public_users.post("/register", (req,res) => {
@@ -29,59 +29,90 @@ public_users.post("/register", (req,res) => {
 });
 
 // Get the book list available in the shop
-public_users.get('/',function (req, res) {
+public_users.get('/', async function(req, res) {
+    try{
+        let response = await axios.get('http://localhost:8080/books');
+        let books = response.data;
     // Send JSON response with formatted books data
     res.send(JSON.stringify(books, null, 4));
+    }
+    catch(error){
+        res.status(500).send("Error fetching books");
+    }
 });
 
 // Get book details based on ISBN
-public_users.get('/isbn/:isbn',function (req, res) {
-    // Retrieve the isbn parameter from the request URL and send the corresponding book's details
-    let isbn = req.params.isbn;
-    res.send(books[isbn]);
+public_users.get('/isbn/:isbn', async function (req, res) {
+    try{
+        let response = await axios.get('http://localhost:8080/books');
+        let books = response.data;
+
+        // Retrieve the isbn parameter from the request URL and send the corresponding book's details
+        let isbn = req.params.isbn;
+        res.send(books[isbn]);
+        }
+    catch(error){
+        res.status(500).send("Error fetching books");
+    }
  });
   
 // Get book details based on author
-public_users.get('/author/:author',function (req, res) {
-    // Retrieve the author parameter from the request URL and initialize an empty list to store books by the author
-    let author = req.params.author;
-    let booksByAuthor = [];
+public_users.get('/author/:author', async function (req, res) {
+    try{
+        let response = await axios.get('http://localhost:8080/books');
+        let books = response.data;
 
-    //loop through the books to check if the author matches
-    for(book in books){
-        if(books[book].author.toLowerCase() === author.toLowerCase()){
-            booksByAuthor.push(books[book]);
+        // Retrieve the author parameter from the request URL and initialize an empty list to store books by the author
+        let author = req.params.author;
+        let booksByAuthor = [];
+
+        //loop through the books to check if the author matches
+        for(book in books){
+            if(books[book].author.toLowerCase() === author.toLowerCase()){
+                booksByAuthor.push(books[book]);
+            }
+        }
+
+        //Return books with matching author, otherwise there were no books
+        if(booksByAuthor.length > 0){
+            res.send(booksByAuthor);
+        }
+        else{
+            res.send(`No books by ${author}`);
         }
     }
-
-    //Return books with matching author, otherwise there were no books
-    if(booksByAuthor.length > 0){
-        res.send(booksByAuthor);
-    }
-    else{
-        res.send(`No books by ${author}`);
+    catch(error){
+        res.status(500).send("Error fetching books");
     }
 });
 
 // Get all books based on title
-public_users.get('/title/:title',function (req, res) {
-    // Retrieve the title parameter from the request URL and initialize an empty list to store books with same title
-    let title = req.params.title;
-    let booksByTitle = [];
+public_users.get('/title/:title', async function (req, res) {
+    try{
+        let response = await axios.get('http://localhost:8080/books');
+        let books = response.data;
 
-    //loop through the books to check if the author matches
-    for(book in books){
-        if(books[book].title.toLowerCase() === title.toLowerCase()){
-            booksByTitle.push(books[book]);
+        // Retrieve the title parameter from the request URL and initialize an empty list to store books with same title
+        let title = req.params.title;
+        let booksByTitle = [];
+
+        //loop through the books to check if the author matches
+        for(book in books){
+            if(books[book].title.toLowerCase() === title.toLowerCase()){
+                booksByTitle.push(books[book]);
+            }
+        }
+
+        //Return books with matching author, otherwise there were no books
+        if(booksByTitle.length > 0){
+            res.send(booksByTitle);
+        }
+        else{
+            res.send(`No books with the title ${title}`);
         }
     }
-
-    //Return books with matching author, otherwise there were no books
-    if(booksByTitle.length > 0){
-        res.send(booksByTitle);
-    }
-    else{
-        res.send(`No books with the title ${title}`);
+    catch(error){
+        res.status(500).send("Error fetching books");
     }
 });
 
